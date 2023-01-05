@@ -1,5 +1,7 @@
 import itertools
 
+truth_table = {}
+
 def implies(p,q):
     ans = []
 
@@ -45,25 +47,7 @@ def print_table(truth_table,ans):
         print(f"{'  True' if truth_table['p'][i] else ' False' }  |{'  True ' if truth_table['q'][i] else '  False'}  |  {ans[i]}\n")
 
 
-def start():
-    expression = input("Enter Propositional logic : ")
-    # print(check_characters_paranthesis(expression=expression))
-    print(valid_expression(expression=expression))
 
-    # variables = list(set(filter(lambda x: x != None,map(lambda x: x if x.isalpha() else None,'_'.join(expression).split('_')))))
-    # table = list(itertools.product([True,False], repeat=len(variables)))
-
-    # truth_table = {}
-
-    # for i in range(len(variables)):
-    #     var = variables[i]
-    #     truth_table[var] =[]
-    #     for j in range(len(table)):
-    #         truth_table[var]  += [table[j][i]]
-
-    # ans = implies(truth_table['p'],truth_table['q'])
-
-    # print_table(truth_table=truth_table,ans=ans)
     
 
 def is_validiation(expression):
@@ -85,7 +69,7 @@ def check_characters_paranthesis(expression):
             st.append(expression[i])
         else:
             if st and expression[i] == ')' :
-                if st[len(st)-1] != '(':
+                if st[-1] != '(':
                     return False
                 else : st.pop()
 
@@ -98,17 +82,13 @@ def valid_expression(expression):
     
     operand = []
     operator = []
-    i = 0;
+    i = 0
     size = len(expression)
+
     while(i < size):
-        print(i)
-        print(operand)
-        print(operator)
-        print(expression[i])
         char = ord(expression[i])
         # ~
         if(char == 126):
-            print(char) 
             if operator and operand:
                 operator.pop()
                 operand.pop()
@@ -117,6 +97,7 @@ def valid_expression(expression):
                 return False
             
             operator.append(expression[i])
+
         # a-z A-Z
         elif((char >=65 and char <=90 ) or (char >=97 and char <=122)):
             if(operand and operator):
@@ -127,11 +108,13 @@ def valid_expression(expression):
             elif(not operand and not operator):
                 operand.append(expression[i])
 
-            elif(operator[0] == '~'):
-                operator.pop()
+            elif(operator and operator[0] == '~'):
+                while(operator and operator[0] == '~'):
+                    operator.pop()
                 operand.append(expression[i])
             
             else : return False
+
         #  ^ and |
         elif(char == 94 or char == 124):
             if(operand and not operator):
@@ -160,18 +143,98 @@ def valid_expression(expression):
                 char = ord(expression[i+1])
                 if((char >=65 and char <=90 ) or (char >=97 and char <=122)):
                     return False
-
-            # operand.pop()        
-
-        i+=1
-        print(i)
-        print("--")
+       
+        i+=1    
 
     if operator:
         return False
     return True
 
-# (p->q)^(q->p)     
+# (p->q)^(q->p)   
+def calculate(operand1,optr,operand2 =None):
+    if(optr=="^"):
+        return conjuction(truth_table[operand1],truth_table[operand2])
+    if(optr=="|"):
+        return disjuction(truth_table[operand1],truth_table[operand2])
+    if(optr=="->"):
+        return implies(truth_table[operand1],truth_table[operand2])
+    if(optr=="<->"):
+        return equivalance(truth_table[operand1],truth_table[operand2])
+    if(optr=="~"):
+        return negation(truth_table[operand1])
+   
+
+
+def evaluation(expression):
+    if(not valid_expression(expression)):
+        return 0
+
+    operand  = []
+    operator=[]
+
+    i = 0;
+    size = len(expression)
+    while(i < size):
+        char =ord( expression[i])
+        
+        if(char == 40):
+            operator.append(expression[i])
+
+        elif(char == 41):
+            operator.pop()
+
+        elif((char >=65 and char <=90 ) or (char >=97 and char <=122)):
+            if(not operand and not operator ):
+                operand.append(expression[i])
+
+            elif(operator and operator[-1] == '('):
+                operand.append(expression[i])
+
+            else : 
+                oprd1 = operand.pop()
+                optr = operator.pop()
+
+                truth_table[oprd1+optr+expression[i]] = calculate(operand1=oprd1,operand2=expression[i],optr= optr)
+                operand.append(oprd1+optr+expression[i])
+
+        elif(char == 94 or char == 124):
+            operator.append(expression[i])
+            
+        elif(char == 60):
+            operator.append("<->")
+            i+=2
+        
+        elif( char == 45):
+            operator.append("->")
+            i+=1
+       
+        i+=1
+    return truth_table[operand[0]]
+
+        
+def start():
+    while(True):
+
+        expression = input("Enter Propositional logic : ")
+        if(not valid_expression(expression=expression)):
+            print("Invalid expression")
+            continue
+    
+        variables = list(set(map(lambda x: ord(x),filter(lambda x: x != None,map(lambda x: x if x.isalpha() else None,'_'.join(expression).split('_'))))))
+        variables.sort()
+        variables = list(map(lambda x: chr(x),variables ))
+        table = list(itertools.product([True,False], repeat=len(variables)))
+
+        for i in range(len(variables)):
+            var = variables[i]
+            truth_table[var] =[]
+            for j in range(len(table)):
+                truth_table[var]  += [table[j][i]]
+    
+        ansTT = evaluation(expression)
+        print(ansTT)
+        break
+    
 
 
 start()
