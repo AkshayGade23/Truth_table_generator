@@ -41,10 +41,25 @@ def equivalance(p,q):
     return ans
 
 
-def print_table(truth_table,ans):
-    print("    p   |    q   |    p->q  \n")
-    for i in range(len(ans)):
-        print(f"{'  True' if truth_table['p'][i] else ' False' }  |{'  True ' if truth_table['q'][i] else '  False'}  |  {ans[i]}\n")
+def print_table(variables,truth_table,expression):
+    
+    l = (len(expression) - 1)//2
+
+    for i in variables:
+        print(f'{i}',end='  |  ')
+
+    print(f'{expression}' ,end = "  |  \n")
+
+    for i in range(len(truth_table["ans"])):
+        for j in variables:
+            print(f'{"T" if truth_table[j][i] else "F"}',end='  |  ')
+        print(" " * l,end="")
+        print(f'{"T" if truth_table["ans"][i] else "F"}',end=f' {" " * l}  |  \n')
+
+    
+
+    
+
 
 
 
@@ -56,8 +71,9 @@ def is_validiation(expression):
     
 
 def check_characters_paranthesis(expression):
-    st = [] #stack for paranthesis chekcing
+    if(not expression) : return False
 
+    st = [] #stack for paranthesis chekcing
     for i in range(len(expression)):
         char = ord(expression[i])
         
@@ -181,6 +197,12 @@ def evaluation(expression):
             operator.append(expression[i])
 
         elif(char == 41):
+            if operator[-1] != "(":
+                oprd2 = operand.pop()
+                oprd1 = operand.pop()
+                optr = operator.pop()
+                truth_table[oprd1+optr+oprd2] = calculate(operand1=oprd1,operand2=oprd2,optr= optr)
+                operand.append(oprd1+optr+oprd2)
             operator.pop()
 
         elif((char >=65 and char <=90 ) or (char >=97 and char <=122)):
@@ -207,9 +229,10 @@ def evaluation(expression):
         elif( char == 45):
             operator.append("->")
             i+=1
-       
+    
         i+=1
-    return truth_table[operand[0]]
+    
+    truth_table["ans"] = truth_table[operand[0]]
 
         
 def start():
@@ -231,10 +254,8 @@ def start():
             for j in range(len(table)):
                 truth_table[var]  += [table[j][i]]
     
-        ansTT = evaluation(expression)
-        print(ansTT)
+        evaluation(expression)
+        print_table(truth_table=truth_table,expression=expression,variables=variables)
         break
     
-
-
 start()
