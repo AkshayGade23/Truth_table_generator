@@ -3,6 +3,8 @@ Truth_table_generator  is a software which generates truth table for proposition
 
 It is console based tool, we have to enter expression and it gives you truth table of it. 
 
+Research Paper (IRJET) : https://www.irjet.net/archives/V10/i1/IRJET-V10I168.pdf
+
 
 
 Example :
